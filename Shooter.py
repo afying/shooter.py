@@ -52,7 +52,14 @@ class SmartEnemy(GameSprite):
             self.rect.x = random.randint(5, 625)
         '''if (sprite.collide_rect(newbullet, enemy)):
             self.kill'''
-            
+
+class Asteroid(GameSprite):
+    def update(self):
+        self.rect.y += self.speed
+        # Если улетел за экран, возвращаем наверх в случайную точку
+        if self.rect.y > 500:
+            self.rect.x = random.randint(5, 625)
+            self.rect.y = -50
 
 class Bullet(GameSprite):
     def __init__(self, player_image, player_x, player_y, player_speed):
@@ -82,6 +89,11 @@ p_x = 325
 p_y = 400
 
 player = Player('rocket.png', p_x, p_y, 10)
+
+asteroids = sprite.Group()
+for i in range(3): # Создадим 3 астероида для начала
+    ast = Asteroid('asteroid.png', random.randint(5, 625), -100, random.randint(1, 2))
+    asteroids.add(ast)
 
 #enemy
 for i in range (5):
@@ -141,10 +153,14 @@ while game:
                 finish = False
                 all_sprites.empty()
                 bullets.empty()
+                asteroids.empty()
                 # Создаем заново
                 for i in range(5):
                     enemy = SmartEnemy('ufo.png', random.randint(5, 625), 0, random.randint(1, 3))
                     all_sprites.add(enemy)
+                for i in range(3):
+                    ast = Asteroid('asteroid.png', random.randint(5, 625), -100, random.randint(1, 2))
+                    asteroids.add(ast)
                 player.rect.x = p_x
                 player.rect.y = p_y
 
@@ -175,6 +191,13 @@ while game:
         bullets.update()
         bullets.draw(window)
 
+        asteroids.update()
+        asteroids.draw(window)
+
+        if sprite.spritecollide(player, all_sprites, False) or sprite.spritecollide(player, asteroids, False) or missed_objects >= 10:
+            finish = True
+        
+        hits = sprite.spritecollide(newbullet, asteroids, True)
         hits = sprite.spritecollide(newbullet, all_sprites, True) # True удаляет врага
         for hit in hits:
             shooted += 1
@@ -186,6 +209,8 @@ while game:
             finish = True
         if shooted >= 10:
             finish = True
+
+        
             
     else:
         # Экран завершения
